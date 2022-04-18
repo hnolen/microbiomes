@@ -28,3 +28,7 @@ sbatch silva_train_classify.slurm #just ran the taxa bar plots step output: silv
 ##got the pop from empty list error - changed to --p-confidence 0.5
 ##keep getting pop from empty list error - changed --p-confidence to 'disable'
 ##this worked, gave me a taxonomy file
+##looking at the bar plots is nice, there are no unassigned ASV's but need to remember that confidence of taxonomic assignment is low
+
+##making tree
+sbatch phylo_tree.slurm ##only ran tree code - not diversity metrics
