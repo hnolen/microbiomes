@@ -27,3 +27,4 @@ sbatch silva_train_classify.slurm #just ran the taxa bar plots step output: silv
 ##running classify-sklearn command at --p-confidence 0
 ##got the pop from empty list error - changed to --p-confidence 0.5
 ##keep getting pop from empty list error - changed --p-confidence to 'disable'
+##this worked, gave me a taxonomy file
