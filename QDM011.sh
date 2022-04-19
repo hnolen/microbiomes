@@ -32,3 +32,6 @@ sbatch silva_train_classify.slurm #just ran the taxa bar plots step output: silv
 
 ##making tree
 sbatch phylo_tree.slurm ##only ran tree code - not diversity metrics
+
+##running diversity metrics rarefying at 2300 reads/sample
+sbatch phylo_tree.slurm
