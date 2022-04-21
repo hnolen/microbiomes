@@ -10,4 +10,16 @@ qiime demux summarize --i-data imported_reads.qza --o-visualization quality.qzv
 ##trim forward at 227
 
 #running cutadapt and itsxpress
-sbatch itsXpress.slurm
+sbatch itsXpress.slurm #output file xpress_trimmed_reads.qza
+##note: itsXpress actually worked with these reads, when I did ITS for 2019 samples I kept getting
+## a non zero exit status error during the vsearch step - going to keep going but maybe I should
+##not do itsxpress with these reads since I didn't do it on my 2019 reads
+
+##running dada2 on xpress_trimmed_reads.qza
+sbatch qiime-dada.slurm ##ran successfully, filtering removed all reads from some samples see dada2.output file
+
+##now run qiime-tables.slurm to get the dns.qzv, table.qzv, and rep-seqs.qzv visualization files
+sbatch qiime-tables.slurm ##looking at dns.qzv - decided to rarefy at 10100
+
+##running taxonomy
+sbatch unite_tax.slurm
