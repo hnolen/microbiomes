@@ -35,3 +35,13 @@ sbatch phylo_tree.slurm ##only ran tree code - not diversity metrics
 
 ##running diversity metrics rarefying at 2300 reads/sample
 sbatch phylo_tree.slurm
+
+##exporting files for phyloseq analysis in R
+qiime tools export --input-path rarefied-table.qza --output-path ./phyloseq/
+biom convert -i feature-table.biom -o feat_table.txt --to-tsv
+
+qiime tools export --input-path silva_taxonomy.qza --output-path filtered-core-metrics-results/phyloseq
+
+qiime tools export --input-path unrooted-tree.qza --output-path filtered-core-metrics-results/phyloseq
+
+##rest of pipeline in R
