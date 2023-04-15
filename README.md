@@ -1,7 +1,5 @@
 # microbiomes
-Repository for QDM-009 and QDM-011 experiments.
-
-QDM-009: 2019 soil samples for characterization of Chenopodium microbiome, these include collaborators samples
-QDM-011: 2020 soil samples for characterization of Chenopodium microbiome, only Woodman and local NH samples
+This repository contains scripts used for the microbiome composition and diversity analyses. 
 
 
+For a general overview of the QIIME2 analysis workflow, see the qiime_workflow.md file. All scripts used are in the qiime2_analysis folder.
