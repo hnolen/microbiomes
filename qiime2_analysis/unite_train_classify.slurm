@@ -48,12 +48,12 @@ source activate qiime2-2020.2
 ## be 24.
 
 ##train the classifier
-qiime feature-classifier fit-classifier-naive-bayes --i-reference-reads /mnt/home/poleatewich/hbn1002/QDM009/data/its/unite/sh_qiime_release_10.05.2021/unite-ref-seqs.qza --i-reference-taxonomy /mnt/home/poleatewich/hbn1002/QDM009/data/its/unite/sh_qiime_release_10.05.2021/unite_taxonomy_classifier_updated.qza --o-classifier aug2022unite_trained_classifier.qza
+qiime feature-classifier fit-classifier-naive-bayes --i-reference-reads ./unite-ref-seqs.qza --i-reference-taxonomy ./unite_taxonomy_classifier_updated.qza --o-classifier unite_trained_classifier.qza
 
 ##test classifier
-qiime feature-classifier classify-sklearn --i-classifier ./aug2022unite_trained_classifier.qza --i-reads ./rep-seqs.qza --o-classification aug2022unite_taxonomy.qza --p-confidence 0.97 --p-read-orientation auto
+qiime feature-classifier classify-sklearn --i-classifier ./unite_trained_classifier.qza --i-reads ./rep-seqs.qza --o-classification unite_taxonomy.qza --p-confidence 0.97 --p-read-orientation auto
 
 ##make barplots from the taxonomy
-qiime taxa barplot --i-table ./table.qza --i-taxonomy aug2022unite_taxonomy.qza --m-metadata-file ./metadata_its2020.tsv --o-visualization aug2022unite-taxa-bar-plots.qzv
+qiime taxa barplot --i-table ./table.qza --i-taxonomy unite_taxonomy.qza --m-metadata-file ./metadata_its2020.tsv --o-visualization unite-taxa-bar-plots.qzv
 
 
