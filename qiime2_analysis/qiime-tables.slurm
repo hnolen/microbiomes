@@ -47,11 +47,13 @@ source activate qiime2-2020.2
 ## As your job will be allocated an entire node, this should normally
 ## be 24.
 
-##getting rarefaction curve
+##creating viz files for DADA2 outputs
+
+##denoising stats
 qiime metadata tabulate --m-input-file dns.qza --o-visualization dns.qzv
 
-##feature table
+##feature table - info for rarefying
 qiime feature-table summarize --i-table table.qza --o-visualization table.qzv 
 
-##repseqs
+##representative sequences per sample
 qiime feature-table tabulate-seqs --i-data rep-seqs.qza --o-visualization rep-seqs.qzv
