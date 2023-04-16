@@ -1,6 +1,6 @@
 ### Microbiome differential abundance work
 
-
+#load libraries
 library(phyloseq)
 library(ggplot2)
 library(ape)
@@ -16,6 +16,10 @@ library(tidyverse)
 library(GUniFrac) 
 library(ggrepel)
 
+#### ====================================================================== ####
+
+#### Load 16S data ####
+#### ====================================================================== ####
 
 feat_table = read.csv("mergedredo/12500/split_feat_table.csv", sep = ",", row.names =1)
 feat_table = as.matrix(feat_table)
@@ -35,6 +39,7 @@ OTU = otu_table(feat_table, taxa_are_rows = TRUE)
 TAX = tax_table(taxonomy)
 META = sample_data(metadata_full)
 
+#create phyloseq object
 physeq_16s = phyloseq(OTU, TAX, META)
 
 # Removing contaminants found in water controls
@@ -57,19 +62,25 @@ ps<-subset_taxa(ps, Family != "D_4__Mitochondria")
 
 
 
-##Woodman data
+##subset to get Woodman data
 
 wo_ps<- subset_samples(ps, location == "Durham_NH")
 wo_ps<- subset_samples(wo_ps, site_type == "agricultural")
 
+#separate into 2019 and 2020 data
 wops19<-subset_samples(wo_ps, year == "2019")
 wops20<-subset_samples(wo_ps, year == "2020")
 
-###significant effect of soil type (bulk vs rhiz) in 2019 woodman samples - doing differential abundance on this
+###significant effect of soil type (bulk vs rhiz) in 2019 woodman samples - differential abundance
+##to create waterfall plots comparing diff. abundance across two groups
+
+##get the taxonomy table from the phyloseq object of interest - I'm looking at genus level taxonomy - make sure any empty string reads as "Unmatched genus"
 tax_table(wops19)[tax_table(wops19)[,"Genus"]== "","Genus"] <- "Unmatchedgenus"
 
+#create a new phyloseq object from that genus data
 genus_dat = aggregate_taxa(wops19, "Genus")
 
+#perform the differential abundance analyis, formula and group should be the factor you are interested in
 out<-ANCOMBC::ancombc(phyloseq = genus_dat, formula = "soil_type", 
                       p_adj_method = "holm", prv_cut = 0.1, 
                       lib_cut = 1000, group = "soil_type",
@@ -81,11 +92,12 @@ kable(head(res$diff_abn))
 lfc<-res$lfc
 head(lfc)
 
-
+#create log fold change and standard error datasets
 df_lfc = data.frame(res$lfc * res$diff_abn, check.names = FALSE) %>% rownames_to_column("taxon_id")
 df_se = data.frame(res$se * res$diff_abn, check.names = FALSE) %>% rownames_to_column("taxon_id")
 colnames(df_se)[-1] = paste0(colnames(df_se)[-1], "SE")
 
+#create the dataframe needed to make the plot with log fold change values and standard error joined by taxon
 df_fig_soil_type = df_lfc %>% 
   dplyr::left_join(df_se, by = "taxon_id") %>%
   dplyr::transmute(taxon_id, soil_typerhizosphere) %>%
@@ -95,6 +107,7 @@ df_fig_soil_type$taxon_id = factor(df_fig_soil_type$taxon_id, levels = df_fig_so
 df_fig_soil_type$direct = factor(df_fig_soil_type$direct, 
                                  levels = c("Positive LFC", "Negative LFC"))
 
+##create figure
 p_soil_type = ggplot(data = df_fig_soil_type, aes(x = taxon_id, y = soil_typerhizosphere, fill = direct, color = direct)) +
   geom_bar(stat = "identity", width = 0.7,
            position = position_dodge(width = 0.4)) +
@@ -113,7 +126,7 @@ write.table(df_fig_soil_type, file = "~/Desktop/mergedredo/12500/soiltypeDA2019_
 
 
 
-###significant effect of soil type (bulk vs rhiz) in 2020 woodman samples - doing differential abundance on this
+###significant effect of soil type (bulk vs rhiz) in 2020 woodman samples - differential abundance 
 tax_table(wops20)[tax_table(wops20)[,"Genus"]== "","Genus"] <- "Unmatchedgenus"
 
 genus_dat = aggregate_taxa(wops20, "Genus")
@@ -227,6 +240,7 @@ df_heat$taxon = factor(df_heat$taxon, levels = sig_taxa) #ordering the taxonomy 
 df_heat$taxon<-str_sub(df_heat$taxon,6) 
 
 
+#creating heat map
 lo = floor(min(df_heat$value))
 up = ceiling(max(df_heat$value))
 mid = (lo + up)/2
