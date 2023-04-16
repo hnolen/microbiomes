@@ -1,5 +1,6 @@
 #### Diversity
 
+#load libraries
 library(phyloseq)
 library(ggplot2)
 library(ape)
@@ -17,6 +18,12 @@ library(ggrepel)
 library(car)
 
 
+#### ====================================================================== ####
+
+#### Load 16S data ####
+#### ====================================================================== ####
+
+#reading in feature table, taxonomy table, and metadata
 feat_table = read.csv("mergedredo/12500/split_feat_table.csv", sep = ",", row.names =1)
 feat_table = as.matrix(feat_table)
 
@@ -34,6 +41,7 @@ OTU = otu_table(feat_table, taxa_are_rows = TRUE)
 TAX = tax_table(taxonomy)
 META = sample_data(metadata_full)
 
+#create phyloseq object
 physeq_16s = phyloseq(OTU, TAX, META)
 
 # Removing contaminants found in water controls
@@ -72,9 +80,6 @@ taxonomyits = as.matrix(taxits)
 metadata_fullits = read.table("QDM011/merged/its/merged_itsmetadata.tsv", sep = "\t", row.names =1, header = TRUE)
 metadata_fullits$year.plot<-as.factor(metadata_fullits$year.plot)
 
-phy_treeits = read_tree("QDM011/merged/its/tree.nwk")
-
-
 
 
 #import as phyloseq objects
@@ -82,8 +87,8 @@ OTUits = otu_table(feat_tableits, taxa_are_rows = TRUE)
 TAXits = tax_table(taxonomyits)
 METAits = sample_data(metadata_fullits)
 
-physeq_its = phyloseq(OTUits, TAXits, METAits, phy_treeits)
-physeq_its = subset_samples(physeq_its, location != "na") #taking out controls
+physeq_its = phyloseq(OTUits, TAXits, METAits)
+
 
 ##looking at just woodman samples
 wo_psits<- subset_samples(physeq_its, location == "Durham_NH")
@@ -94,21 +99,20 @@ wo_psits<- subset_samples(wo_psits, site_type == "agricultural")
 ###16s diversity analyses - looking at diffs in woodman diversity in 2019 and 2020
 wo_ps<-subset_samples(ps, site == "Woodman")
 
+#get richness estimates
 richness_est<-estimate_richness(wo_ps, split = TRUE)
-write.csv(richness_est, "./mergedredo/12500/bacteria_div_est.csv", row.names = TRUE) #need to get X's out of names
-richness_est = read.csv("./mergedredo/12500/bacteria_div_est.csv", sep = ",", row.names =1, check.names = FALSE)
+
 
 richness_est_c <- tibble::rownames_to_column(richness_est, "index")
 metadata_c <- tibble::rownames_to_column(metadata_full, "index")
 
+#join richness data and metadata
 rich_w_meta <- left_join(richness_est_c, metadata_c, by = "index") #now I can do stats on the diversity dataframe!
 
 #first things first: make the first column the rownames
 row.names(rich_w_meta) <- rich_w_meta$index
 rich_w_meta[1] <- NULL
 
-#make soil_type an ordered variable (not sure why we need to do this)
-rich_w_meta$soil_type <- ordered(rich_w_meta$soil_type, c("bulk", "rhizosphere"))
 
 ##want to do anova on sample type (soil type) on each year separately to get p-values
 rich_w_meta$year<-as.factor(rich_w_meta$year)
@@ -136,6 +140,8 @@ mod <- lm(Shannon~soil_type*year, data = rich_w_meta)
 library(car)
 Anova(mod) #year p = 0.001, soil_type p = 0.85
 
+
+##plot diversity
 divp<-ggplot(rich_w_meta, aes(x = year, y = Shannon, fill = year)) + 
   geom_boxplot() +
   theme_bw() +
@@ -152,7 +158,12 @@ divp<-ggplot(rich_w_meta, aes(x = year, y = Shannon, fill = year)) +
 
 
 
+
+#### ====================================================================== ####
+
 ###ITS diversity analyses - looking at diffs in woodman diversity in 2019 and 2020
+
+#### ====================================================================== ####
 
 richness_its<-estimate_richness(wo_psits, split = TRUE)
 write.csv(richness_its, "./QDM011/merged/its/fungi_div_est.csv", row.names = TRUE) #need to get X's out of names
@@ -163,14 +174,12 @@ richness_its = read.csv("./QDM011/merged/its/fungi_div_est.csv", sep = ",", row.
 richness_its_c <- tibble::rownames_to_column(richness_its, "index")
 metadata_itsc <- tibble::rownames_to_column(metadata_fullits, "index")
 
-rich_w_metaits <- left_join(richness_its_c, metadata_itsc, by = "index") #now I can do stats on the diversity dataframe!
+rich_w_metaits <- left_join(richness_its_c, metadata_itsc, by = "index") 
 
 #first things first: make the first column the rownames
 row.names(rich_w_metaits) <- rich_w_metaits$index
 rich_w_metaits[1] <- NULL
 
-#make soil_type an ordered variable (not sure why we need to do this)
-rich_w_metaits$soil_type <- ordered(rich_w_metaits$soil_type, c("bulk", "rhizosphere"))
 
 ##want to do anova on sample type (soil type) on each year separately to get p-values
 rich_w_metaits$year.plot<-as.factor(rich_w_metaits$year.plot)
@@ -198,6 +207,8 @@ modits <- lm(Shannon~soil_type*year.plot, data = rich_w_metaits)
 library(car)
 Anova(modits) #year p = 0.52, soil_type p = 0.75
 
+
+##plotting
 divpits<-ggplot(rich_w_metaits, aes(x = year.plot, y = Shannon, fill = year.plot)) + 
   geom_boxplot() +
   theme_bw() +
@@ -214,55 +225,33 @@ divpits<-ggplot(rich_w_metaits, aes(x = year.plot, y = Shannon, fill = year.plot
 
 
 
-
+##putting 16s and ITS plots together
 ggarrange(divp, divpits, nrow = 1, ncol =2)
 
 
 
+
+#### ====================================================================== ####
+
 #### Location - ITS
-locits_ps <- subset_samples(physeq_its, site != "Woodman")
-locits_rich<-estimate_richness(locits_ps, split=TRUE)
-write.csv(locits_rich, "./QDM011/merged/its/loc_fungi_div_est.csv", row.names = TRUE)
-locits_div = read.csv("./QDM011/merged/its/loc_fungi_div_est.csv", sep = ",", row.names =1, check.names = FALSE)
 
-metadataits <- as(sample_data(locits_ps), "data.frame")
-
-locits_div_c <- tibble::rownames_to_column(locits_div, "index")
-metadataits_c <- tibble::rownames_to_column(metadataits, "index")
-
-locits_div<- left_join(locits_div_c, metadataits_c, by = "index")
-
-
-#first things first: make the first column the rownames
-row.names(locits_div) <- locits_div$index
-locits_div[1] <- NULL
-
-#make soil_type an ordered variable (not sure why we need to do this)
-locits_div$soil_type <- ordered(locits_div$soil_type, c("bulk", "rhizosphere"))
-
-locmodits <- lm(Shannon~location+texture, data = locits_div)
-Anova(locmodits) #
-tuk<-HSD.test(locmodits, "location")
-tuk<-HSD.test(locmodits, "texture")
-
-
-
-
-
-
+#### ====================================================================== ####
 
 
 
 #### Location
 ##diversity - everything but woodman - location experiment
+
+#remove woodman samples from dataset
 loc_ps <- subset_samples(ps, site != "Woodman")
+
+#estimate richness
 loc_rich<-estimate_richness(loc_ps, split=TRUE)
-write.csv(loc_rich, "./mergedredo/12500/loc_div.csv", row.names = TRUE)
-loc_div = read.csv("./mergedredo/12500/loc_div.csv", sep = ",", row.names =1, check.names = FALSE)
+
 
 metadata <- as(sample_data(loc_ps), "data.frame")
 
-loc_div_c <- tibble::rownames_to_column(loc_div, "index")
+loc_div_c <- tibble::rownames_to_column(loc_rich, "index")
 metadata_c <- tibble::rownames_to_column(metadata, "index")
 
 loc_div<- left_join(loc_div_c, metadata_c, by = "index")
@@ -271,13 +260,13 @@ loc_div<- left_join(loc_div_c, metadata_c, by = "index")
 row.names(loc_div) <- loc_div$index
 loc_div[1] <- NULL
 
-#make soil_type an ordered variable (not sure why we need to do this)
-loc_div$soil_type <- ordered(loc_div$soil_type, c("bulk", "rhizosphere"))
+
 
 mod <- lm(Shannon~location+texture, data = loc_div)
 Anova(mod) #location p = 0.33, texture p = 0.002
 tuk<-LSD.test(mod, "location")
 
+#plotting
 divp<-ggplot(loc_div, aes(x = factor(location), y = Shannon)) + 
   geom_boxplot() +
   ylim(0,8) +
@@ -311,7 +300,12 @@ divtex<-ggplot(tex_nona, aes(x = factor(texture), y = Shannon)) +
   annotate("text", x = 4, y = 7.2, label = "a", size = 8)
 
 
-##### Site type
+
+
+#### ====================================================================== ####
+##### Diversity by Site type - agriculture vs wild - 16s
+
+#### ====================================================================== ####
 du_ps<-subset_samples(ps, location == "Durham_NH")
 rye_ps<-subset_samples(ps, location == "Rye_NH")
 nh_ps = merge_phyloseq(du_ps, rye_ps)
@@ -392,9 +386,13 @@ div20p<-ggplot(site20_div, aes(x = factor(soil_type), y = Shannon, fill = site_t
 ggarrange(div19p, div20p, ncol = 2, nrow = 1, common.legend = TRUE, legend = "right")
 
 
-
+#### ====================================================================== ####
 
 ##### Site type - ITS
+
+#### ====================================================================== ####
+
+
 du_ps<-subset_samples(physeq_its, location == "Durham_NH")
 rye_ps<-subset_samples(physeq_its, location == "Rye_NH")
 nh_ps = merge_phyloseq(du_ps, rye_ps)
@@ -442,22 +440,6 @@ Anova(mod20)
 
 
 
-
-
-## making figure Anissa wanted - bacteria and fungi in the same plot
-
-full_div = read.csv("./QDM011/merged/bac_fungi_div_est.csv", sep = ",", row.names =1, check.names = FALSE)
-
-
-fulldivp<-ggplot(full_div, aes(x = factor(Sample_Type), y = Shannon, fill = Sample_Type)) + 
-  geom_boxplot() +
-  ylim(0,8) +
-  labs(x = "", y = "Shannon Richness") +
-  theme(axis.title.x = element_text(color = "black", size = 16), 
-        axis.title.y = element_text(color = "black", size = 16), 
-        axis.text = element_text(size = 14, colour = "black")) +
-  theme(legend.text = element_text(size =14)) +
-  theme(legend.title = element_text(size =14, face = "bold"))
 
 
 
