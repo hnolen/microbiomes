@@ -47,4 +47,6 @@ source activate qiime2-2020.2
 ## As your job will be allocated an entire node, this should normally
 ## be 24.
 
-qiime dada2 denoise-paired --i-demultiplexed-seqs /mnt/home/poleatewich/hbn1002/QDM011/its/xpress_trimmed_reads.qza --p-trunc-len-f 0 --p-trunc-len-r 0 --p-n-threads 24 --o-representative-sequences /mnt/home/poleatewich/hbn1002/QDM011/its/rep-seqs.qza --o-table /mnt/home/poleatewich/hbn1002/QDM011/its/table.qza --o-denoising-stats /mnt/home/poleatewich/hbn1002/QDM011/its/dns.qza --verbose
+
+##Running DADA2 on paired end reads - denoising, quality filtering and clustering - outputs feature table, denoising stats, and representative sequences per sample
+qiime dada2 denoise-paired --i-demultiplexed-seqs ./trimmed_reads.qza --p-trunc-len-f 0 --p-trunc-len-r 0 --p-n-threads 24 --o-representative-sequences ./rep-seqs.qza --o-table ./table.qza --o-denoising-stats ./dns.qza --verbose
