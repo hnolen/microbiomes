@@ -30,10 +30,7 @@ or
 `sbatch silva_train_classify.slurm` for 16S
 
 ### 5. Build tree and perform core diversity metrics
-`qiime phylogeny align-to-tree-mafft-fasttree --i-sequences ./rep-seqs.qza --o-alignment ./aligned-rep-seqs.qza --o-masked-alignment ./masked-align-rep-seqs.qza --o-tree ./unrooted-tree.qza --o-rooted-tree ./rooted-tree.qza`
-
-
-`qiime diversity core-metrics-phylogenetic --i-phylogeny ./rooted-tree.qza --i-table ./table.qza --p-sampling-depth 10100 --m-metadata-file ./metadata_its2020.tsv --output-dir ./core-div-metrics`
+`sbatch tree_divmetrics.slurm`
 
 
 ### 6. Export files for analysis in R
