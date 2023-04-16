@@ -1,6 +1,6 @@
-## Working on 2019 16s Location data - adding vectors to PCoA
+## Analyzing 2019 location data
 
-
+#load libraries
 library(phyloseq)
 library(ggplot2)
 library(ape)
@@ -12,12 +12,21 @@ library(dplyr)
 library(microbiome)
 library(tibble)
 library(ggforce)
+library(tidyverse) 
+library(ggrepel) # optional - nice to help keep labels on ggplots from running into each other
 
+
+#### ====================================================================== ####
+
+#### Load 16S data ####
+#### ====================================================================== ####
+
+#import feature table, taxonomy table, and metadata
 feat_table = read.csv("mergedredo/12500/split_feat_table.csv", sep = ",", row.names =1)
 feat_table = as.matrix(feat_table)
 
 taxonomy = read.csv("mergedredo/12500/split_tax.csv", sep = ",", row.names = 1)
-taxonomy <- replace(taxonomy, taxonomy == "", NA)
+taxonomy <- replace(taxonomy, taxonomy == "", NA) #make any empty strings in taxonomy read NA
 taxonomy = as.matrix(taxonomy)
 
 metadata_full = read.table("mergedredo/updated_metadata.tsv", sep = "\t", row.names = 1, header = TRUE)
@@ -39,8 +48,8 @@ head(taxa_names(phy_tree))
 sample_names(OTU)
 sample_names(META)
 
-
-physeq_16s = phyloseq(OTU, TAX, META) #not using phy_tree for now
+#create phyloseq object
+physeq_16s = phyloseq(OTU, TAX, META) 
 
 # Removing contaminants found in water controls
 ps<-subset_taxa(physeq_16s, Family != "FamilyNA")
@@ -61,7 +70,7 @@ ps<-subset_taxa(ps, Class != "D_2__Chloroplast")
 ps<-subset_taxa(ps, Family != "D_4__Mitochondria")
 
 
-###looking at location differences - subset by 2019
+###looking at location differences - subset into just 2019 wild data
 loc_ps<- subset_samples(physeq_16s, year.plot == "2019/Plot1")
 loc_ps<- subset_samples(loc_ps, site_type == "wild")
 
@@ -72,6 +81,7 @@ loc_ps<- subset_samples(loc_ps, site_type == "wild")
 #### Load ITS data ####
 #### ====================================================================== ####
 
+#import feature table, taxonomy, and metadata
 feat_tableits = read.csv("QDM011/merged/its/split_feat_table.csv", sep = ",", row.names =1, check.names = TRUE)
 feat_tableits = as.matrix(feat_tableits)
 
@@ -84,34 +94,21 @@ taxonomyits = as.matrix(taxits)
 metadata_fullits = read.table("QDM011/merged/its/merged_itsmetadata.tsv", sep = "\t", row.names =1, header = TRUE)
 metadata_fullits$year.plot<-as.factor(metadata_fullits$year.plot)
 
-phy_treeits = read_tree("QDM011/merged/its/tree.nwk")
-
-
-
 
 #import as phyloseq objects
 OTUits = otu_table(feat_tableits, taxa_are_rows = TRUE)
 TAXits = tax_table(taxonomyits)
 METAits = sample_data(metadata_fullits)
 
+#create phyloseq object
 physeq_its = phyloseq(OTUits, TAXits, METAits, phy_treeits)
-physeq_its = subset_samples(physeq_its, location != "na") #taking out controls
 
 
-###looking at location differences - subset by 2019
+###looking at location differences - subset by 2019 wild data
 locits_ps<- subset_samples(physeq_its, year.plot == "2019/Plot1")
 locits_ps<- subset_samples(locits_ps, site_type == "wild")
 
-
-
-library(tidyverse) # loads dplyr, ggplot, and other helpful data processing tools
-library(vegan) # for dissimilarity metrics and other ecological functions
-library(phyloseq) # Loading just for data
-library(ape) # ape has a nice function for comuting pcoas that has a little more functionality than cmdscale() in base R stats package
-library(GUniFrac) # if you like unifrac distance rather than bray-curtis you'll need this package
-library(ggrepel) # optional - nice to help keep labels on ggplots from running into each other
-
-
+#create new metadata using subsetted data
 loc_metadata <- data.frame(sample_data(loc_ps)) 
 locits_metadata <- data.frame(sample_data(locits_ps)) 
 
@@ -119,7 +116,7 @@ locits_metadata <- data.frame(sample_data(locits_ps))
 loc_tax_info <- data.frame(tax_table(loc_ps))
 locits_tax_info <- data.frame(tax_table(locits_ps))
 
-# Extract OTU table from global patterns dataset and convert it out of phyloseq format
+# Extract OTU table and convert it out of phyloseq format
 loc_otu_df <- data.frame(otu_table(loc_ps), check.names = FALSE) 
 locits_otu_df <- data.frame(otu_table(locits_ps), check.names = FALSE) 
 
