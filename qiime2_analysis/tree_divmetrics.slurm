@@ -47,6 +47,9 @@ source activate qiime2-2020.2
 ## As your job will be allocated an entire node, this should normally
 ## be 24.
 
-qiime phylogeny align-to-tree-mafft-fasttree --i-sequences ./rep-seqs.qza --o-alignment ./aug2022/aligned-rep-seqs.qza --o-masked-alignment ./aug2022/masked-align-rep-seqs.qza --o-tree ./aug2022/unrooted-tree.qza --o-rooted-tree ./aug2022/rooted-tree.qza
+##create tree and alignment files
+qiime phylogeny align-to-tree-mafft-fasttree --i-sequences ./rep-seqs.qza --o-alignment ./aligned-rep-seqs.qza --o-masked-alignment ./masked-align-rep-seqs.qza --o-tree ./unrooted-tree.qza --o-rooted-tree ./rooted-tree.qza
+
+##use either rooted or unrooted tree to obtain beta diversity metrics and rarefy dataset (use unrooted if you eventually want to use UniFrac scores in R)
 qiime diversity core-metrics-phylogenetic --i-phylogeny ./aug2022/rooted-tree.qza --i-table ./table.qza --p-sampling-depth 10100 --m-metadata-file ./metadata_its2020.tsv --output-dir ./core-div-metrics-aug2022
 
