@@ -47,8 +47,12 @@ source activate qiime2-2020.2
 ## As your job will be allocated an entire node, this should normally
 ## be 24.
 
-##qiime tools import --type 'SampleData[PairedEndSequencesWithQuality]' --input-path ./reads --input-format CasavaOneEightSingleLanePerSampleDirFmt --output-path ./jul10/imported_reads.qza
 
+##import Illumina reads into qiime - note: type and input-format arguments differ based on what types of reads you are importing
+qiime tools import --type 'SampleData[PairedEndSequencesWithQuality]' --input-path ./reads --input-format CasavaOneEightSingleLanePerSampleDirFmt --output-path ./imported_reads.qza
+
+##trim off primer sequences using cutadapt
 qiime cutadapt trim-paired --i-demultiplexed-sequences ./imported_reads.qza --p-front-f GTGYCAGCMGCCGCGGTAA --p-front-r GGACTACNVGGGTWTCTAAT --o-trimmed-sequences ./trimmed_reads.qza
 
+##create base call quality visualization plots
 qiime demux summarize --i-data ./trimmed_reads.qza --o-visualization ./trimmed_reads_viz.qzv
