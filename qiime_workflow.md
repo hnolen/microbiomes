@@ -18,13 +18,16 @@ view plots at https://view.qiime2.org/
 ### 4. Assign taxonomy
 
 
-`sbatch unite_tax.slurm` for ITS
+These scripts train the classifier using sklearn, 
+
+
+`sbatch unite_train_classify.slurm` for ITS
 
 
 or  
 
 
-`sbatch xxxxx.slurm` for 16S
+`sbatch silva_train_classify.slurm` for 16S
 
 ### 5. Build tree and perform core diversity metrics
 `qiime phylogeny align-to-tree-mafft-fasttree --i-sequences ./rep-seqs.qza --o-alignment ./aligned-rep-seqs.qza --o-masked-alignment ./masked-align-rep-seqs.qza --o-tree ./unrooted-tree.qza --o-rooted-tree ./rooted-tree.qza`
