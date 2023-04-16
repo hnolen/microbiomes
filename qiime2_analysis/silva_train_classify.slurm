@@ -47,9 +47,10 @@ source activate qiime2-2019.4
 ## As your job will be allocated an entire node, this should normally
 ## be 24.
 
+##train classifier using reference taxonomy from silva database 
 qiime feature-classifier fit-classifier-naive-bayes --i-reference-reads ref-seqs.qza --i-reference-taxonomy 99_otu_taxonomy.qza --o-classifier trained_classifier.qza
 
-##test classifier
+##test classifier with sample reads
 qiime feature-classifier classify-sklearn --i-classifier ./trained_classifier.qza --i-reads ./rep-seqs.qza --o-classification silva_taxonomy.qza --p-confidence 0.97 --p-read-orientation auto
 
 ##make barplots from the taxonomy
