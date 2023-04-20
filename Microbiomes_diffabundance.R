@@ -1,5 +1,7 @@
 ### Microbiome differential abundance work
 
+##Differential abundance refer to this github - http://www.bioconductor.org/packages/release/bioc/vignettes/ANCOMBC/inst/doc/ANCOMBC.html
+
 #load libraries
 library(phyloseq)
 library(ggplot2)
