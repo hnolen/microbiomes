@@ -49,4 +49,4 @@ source activate qiime2-2020.2
 
 
 ##Running DADA2 on paired end reads - denoising, quality filtering and clustering - outputs feature table, denoising stats, and representative sequences per sample
-qiime dada2 denoise-paired --i-demultiplexed-seqs ./trimmed_reads.qza --p-trunc-len-f 0 --p-trunc-len-r 0 --p-n-threads 24 --o-representative-sequences ./rep-seqs.qza --o-table ./table.qza --o-denoising-stats ./dns.qza --verbose
+qiime dada2 denoise-paired --i-demultiplexed-seqs ./trimmed_reads.qza --p-trunc-len-f 231 --p-trunc-len-r 209 --p-n-threads 24 --o-representative-sequences ./rep-seqs.qza --o-table ./table.qza --o-denoising-stats ./dns.qza --verbose
