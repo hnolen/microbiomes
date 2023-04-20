@@ -81,12 +81,14 @@ tax_table(wops19)[tax_table(wops19)[,"Genus"]== "","Genus"] <- "Unmatchedgenus"
 genus_dat = aggregate_taxa(wops19, "Genus")
 
 #perform the differential abundance analyis, formula and group should be the factor you are interested in
+# contains: 1) log fold changes; 2) standard errors; 3) test statistics; 
+# 4) p-values; 5) adjusted p-values; 6) indicators whether the taxon is differentially abundant (TRUE) or not (FALSE).
 out<-ANCOMBC::ancombc(phyloseq = genus_dat, formula = "soil_type", 
-                      p_adj_method = "holm", prv_cut = 0.1, 
-                      lib_cut = 1000, group = "soil_type",
+                      p_adj_method = "holm", prv_cut = 0.1, #holm is default p-value adjustment, taxa with prevalence less that prv_cut will be excluded, default 0.1
+                      lib_cut = 1000, group = "soil_type", #samples with library sizes less than lib cut will be excluded
                       struc_zero = TRUE, neg_lb = TRUE,
-                      tol = 1e-5, max_iter = 100,
-                      conserve = TRUE, alpha = 0.05, global = TRUE)
+                      tol = 1e-5, max_iter = 100, #tol - convergence tolerance - default 1e-5, max_iter-maximum iterations, default 100
+                      conserve = TRUE, alpha = 0.05, global = TRUE) #conserve = TRUE uses a conservative variance estimator for test statistic - recommended for small sample sizes
 res<-out$res
 kable(head(res$diff_abn))
 lfc<-res$lfc
