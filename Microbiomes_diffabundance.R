@@ -274,19 +274,24 @@ phylum_dat_tex = aggregate_taxa(tex_ps, "Phylum")
 #need to remove silty clay - only 2 instances
 
 pseq_tex = subset_samples(phylum_dat_tex, texture %in% c("clay loam", "loamy sand", "sand", "sandy loam", "loam"))
+
+#perform the differential abundance analyis, formula and group should be the factor you are interested in
+# contains: 1) log fold changes; 2) standard errors; 3) test statistics; 
+# 4) p-values; 5) adjusted p-values; 6) indicators whether the taxon is differentially abundant (TRUE) or not (FALSE).
 out3_tex<-ANCOMBC::ancombc(phyloseq = pseq_tex, formula = "texture", 
-                       p_adj_method = "holm", prv_cut = 0.1, 
-                       lib_cut = 100, group = "texture",
-                       struc_zero = TRUE, neg_lb = TRUE,
-                       tol = 1e-5, max_iter = 100,
-                       conserve = TRUE, alpha = 0.05, global = TRUE)
+                       p_adj_method = "holm", prv_cut = 0.1, #holm is default p-value adjustment, taxa with prevalence less that prv_cut will be excluded, default 0.1
+                       lib_cut = 100, group = "texture", #samples with library sizes less than lib cut will be excluded
+                       struc_zero = TRUE, neg_lb = TRUE, 
+                       tol = 1e-5, max_iter = 100, #tol - convergence tolerance - default 1e-5, max_iter-maximum iterations, default 100
+                       conserve = TRUE, alpha = 0.05, global = TRUE) #conserve = TRUE uses a conservative variance estimator for test statistic - recommended for small sample sizes
 
 
 l_restex<-out3_tex$res
-res_globaltex = out3_tex$res_global #need to get global bc there are more than 2 levels in location
+res_globaltex = out3_tex$res_global #need to get global bc there are more than 2 levels in the factor
+#res_globaltex has abundance, p val, adjusted p val, and diff_abn
 
 ##getting bias-corrected abundances
-samp_fractex = out3_tex$samp_frac
+samp_fractex = out3_tex$samp_frac #getting sample fractions
 samp_fractex[is.na(samp_fractex)] = 0 #replace NA with 0
 log_obs_abntex = log(abundances(pseq_tex) + 1) # Add pesudo-count (1) to avoid taking the log of 0
 log_obs_abn_adjtex = t(t(log_obs_abntex) - samp_fractex) # Adjust the log observed abundances
@@ -301,7 +306,7 @@ sig_taxatex = res_globaltex %>%
 meta_dftex = meta(pseq_tex) %>%
   tibble::rownames_to_column("sample")
 
-#getting the abundances, adding in metadata, and elongating the dataset
+#getting the abundances, adding in metadata, and pivoting sample columns but not metadata colums
 df_sigtex = as.data.frame(t(log_obs_abn_adjtex[sig_taxatex, ]))%>%
   tibble::rownames_to_column("sample") %>%
   dplyr::left_join(meta(meta_dftex)) %>%
@@ -312,9 +317,10 @@ df_sigtex = as.data.frame(t(log_obs_abn_adjtex[sig_taxatex, ]))%>%
                                      "elevation", "solar_rad", "av_temp", "av_precip", "leaf_wetness_hrs", "rh_90_hrs"), #this is saying to elongate NOT one of these columns - I think you have to do it this double negative way unless you want to use one_of() and list out all of the taxonomy columns
                       names_to = "taxon", values_to = "value")
 
+#create datframe for heat plot
 df_heattex = df_sigtex %>%
   dplyr::group_by(texture, taxon) %>% #putting texture and taxon at the front
-  dplyr::summarise_if(is.numeric, mean, na.rm = TRUE) %>% #getting mean of values?
+  dplyr::summarise_if(is.numeric, mean, na.rm = TRUE) %>% #getting mean of values
   dplyr::mutate(value = round(value, 2)) %>% #rounding values
   dplyr::arrange(texture) 
 df_heattex$taxon = factor(df_heattex$taxon, levels = sig_taxatex) #ordering the taxonomy by significant taxa
@@ -322,7 +328,7 @@ df_heattex$taxon = factor(df_heattex$taxon, levels = sig_taxatex) #ordering the 
 #Remove the underscores from the beginning of the Factor Labels
 df_heattex$taxon<-str_sub(df_heattex$taxon,6) 
 
-
+#define lo, medium and high levels based on LFC value
 lotex = floor(min(df_heattex$value))
 uptex = ceiling(max(df_heattex$value))
 midtex = (lotex + uptex)/2
@@ -330,7 +336,7 @@ p_heat_tex = df_heattex %>%
   ggplot(aes(x = texture, y = taxon, fill = value)) + 
   geom_tile(color = "white") +
   scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
-                       na.value = "white", midpoint = mid, limit = c(lo, up),
+                       na.value = "white", midpoint = midtex, limit = c(lotex, uptex),
                        name = NULL) +
   geom_text(aes(texture, taxon, label = value), color = "black", size = 4) +
   theme_minimal() +
