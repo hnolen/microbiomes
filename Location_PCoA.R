@@ -157,7 +157,7 @@ locits_bc <- vegdist(x = locits_otu_df_t, method = "bray")
 #### ====================================================================== ####
 
 
-#### Step 3: Compute two kinds of ordination #####
+#### Step 3: Compute ordination #####
 
 #### ====================================================================== ####
 
@@ -232,7 +232,7 @@ env_fit_wrapper <- function(ordination, otu_tab, ordination_type = "NMDS", tax_c
   fit <- envfit(ord = ord_axes, env = otu_filt, perm = 999, na.rm = TRUE)
   
   # adjust p-values for many tests
-  pvals.adj <- p.adjust(fit$vectors$pvals, method = "fdr")
+  pvals.adj <- p.adjust(fit$vectors$pvals, method = "fdr") #false discovery rate adjustment
   fit$vectors$pval.adj <- pvals.adj
   
   # Use scores to transforms the axes values so the legth of the arrow is propotional to R2
